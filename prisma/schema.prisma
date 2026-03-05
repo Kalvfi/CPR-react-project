@@ -40,7 +40,7 @@ model Column {
   title     String
   position  Int
   boardId   String
-  board     Board    @relation(fields: [boardId], references: [id])
+  board     Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards     Card[]
 }
 
@@ -50,7 +50,7 @@ model Card {
   imageUrl  String
   position  Int
   columnId  String
-  column    Column   @relation(fields: [columnId], references: [id])
+  column    Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
 }
 
 model Account {
