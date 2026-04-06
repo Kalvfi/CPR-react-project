@@ -1,38 +1,14 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-
-type Card = {
-	id: string;
-	title?: string;
-	imageUrl: string;
-	position: number;
-};
-
-type Column = {
-	id: string;
-	title: string;
-	position: number;
-	cards: Card[];
-};
-
-type Board = {
-	id: string;
-	title: string;
-	columns: Column[];
-};
+import { KanbanSquare, Plus, MoreVertical, Clock } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
+import NewBoardModal from '@/components/NewBoardModal';
+import Link from 'next/link';
 
 export default function Home() {
 	const { data: session, status } = useSession();
-	const [boards, setBoards] = useState<Board[]>([]);
-
-	useEffect(() => {
-		fetch('/api/boards')
-			.then((res) => res.json())
-			.then((data) => setBoards(data))
-			.catch((err) => console.error(err));
-	}, []);
+	const { boards, openModal } = useAppContext();
 
 	if (status === 'loading') {
 		return <p>Loading...</p>;
@@ -40,37 +16,79 @@ export default function Home() {
 
 	if (!session) {
 		return (
-			<div className="flex h-[60vh] items-center justify-center">
-				<div className="text-center space-y-4">
-					<h1 className="text-3xl font-bold">Welcome</h1>
-					<p>Sign in using the button in the header to view your boards.</p>
+			<div className="flex h-full flex-col items-center justify-center p-8 text-center">
+				<div className="mb-6 rounded-full bg-indigo-100 p-4 dark:bg-indigo-900/30">
+					<KanbanSquare
+						size={48}
+						className="text-indigo-600 dark:text-indigo-400"
+					/>
 				</div>
+				<h1 className="mb-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+					Welcome to TaskFlow
+				</h1>
+				<p className="mb-8 max-w-md text-lg text-gray-600 dark:text-gray-400">
+					Organize your projects, collaborate with your team, and get more done.
+					Please sign in with Google to view your boards.
+				</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="text-white">
-			<h1 className="text-2xl font-bold mb-6">Your Boards</h1>
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-				{boards.map((board) => (
-					<BoardTile key={board.id} board={board} />
-				))}
-				<button className="h-24 bg-white/20 hover:bg-white/30 transition rounded-md flex items-center justify-center border-2 border-dashed border-white/40">
-					<span className="font-medium text-white">Create new board</span>
+		<div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+			<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+						Dashboard
+					</h1>
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						Welcome back, {session.user.name}! Here are your boards.
+					</p>
+				</div>
+				<button
+					className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+					onClick={() => openModal()}>
+					<Plus size={16} />
+					Create Board
 				</button>
 			</div>
-		</div>
-	);
-}
 
-function BoardTile({ board }: { board: Board }) {
-	return (
-		<div className="h-24 bg-blue-800 hover:bg-blue-900 transition-all p-3 rounded-md cursor-pointer shadow-sm relative group">
-			<h2 className="font-bold text-lg">{board.title}</h2>
-			<div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-				⭐
+			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				{/* Create New Board Card */}
+				<button
+					className="group flex h-40 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-transparent transition-colors hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-700 dark:hover:border-indigo-400 dark:hover:bg-indigo-950/20"
+					onClick={() => openModal()}>
+					<div className="mb-2 rounded-full bg-gray-100 p-2 text-gray-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-indigo-900/50 dark:group-hover:text-indigo-400">
+						<Plus size={24} />
+					</div>
+					<span className="text-sm font-medium text-gray-600 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-indigo-400">
+						Create new board
+					</span>
+				</button>
+
+				{/* Existing Boards */}
+				{boards.map((board) => (
+					<Link href={`/boards/${encodeURIComponent(board.id)}`} key={board.id}>
+						<div className="group relative flex h-40 cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-950">
+							<div className={`absolute left-0 top-0 h-1 w-full bg-blue-500`} />
+							<div className="flex items-start justify-between">
+								<h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2">
+									{board.title}
+								</h3>
+								<button className="rounded p-1 text-gray-400 opacity-0 transition-opacity hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+									<MoreVertical size={16} />
+								</button>
+							</div>
+							<div className="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+								<Clock size={14} />
+								Edited
+							</div>
+						</div>
+					</Link>
+				))}
 			</div>
+
+			<NewBoardModal />
 		</div>
 	);
 }
