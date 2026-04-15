@@ -7,13 +7,14 @@ export async function GET(
 	req: Request,
 	{ params }: { params: { id: string } },
 ) {
+	const { id } = await params;
 	const session = await getServerSession(authOptions);
 	if (!session)
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
-		const board = await prisma.board.findFirst({
-			where: { id: params.id, ownerId: session.user.id },
+		const board = await prisma.board.findUnique({
+			where: { id: id },
 			include: {
 				columns: {
 					include: {
@@ -28,7 +29,7 @@ export async function GET(
 
 		return NextResponse.json(board);
 	} catch (err) {
-		return NextResponse.json({ error: 'Server error' }, { status: 500 });
+		return NextResponse.json(err);
 	}
 }
 

@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: 'TrelloClone',
+	title: 'TaskFlow',
 	description: 'Half-term programming project',
 };
 

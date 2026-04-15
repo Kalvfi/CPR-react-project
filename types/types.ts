@@ -1,11 +1,11 @@
-type Card = {
+export type Card = {
 	id: string;
 	title?: string;
 	imageUrl: string;
 	position: number;
 };
 
-type Column = {
+export type Column = {
 	id: string;
 	title: string;
 	position: number;
