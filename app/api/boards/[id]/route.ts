@@ -37,6 +37,7 @@ export async function PATCH(
 	req: Request,
 	{ params }: { params: { id: string } },
 ) {
+	const { id } = await params;
 	const body = await req.json();
 
 	if (!body.title || typeof body.title !== 'string') {
@@ -48,8 +49,8 @@ export async function PATCH(
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
-		const board = await prisma.board.findFirst({
-			where: { id: params.id, ownerId: session.user.id },
+		const board = await prisma.board.findUnique({
+			where: { id: id, ownerId: session.user.id },
 		});
 
 		if (!board)
@@ -60,7 +61,7 @@ export async function PATCH(
 
 	try {
 		const updated = await prisma.board.update({
-			where: { id: params.id, ownerId: session.user.id },
+			where: { id: id, ownerId: session.user.id },
 			data: {
 				title: body.title,
 				layout: body.layout,

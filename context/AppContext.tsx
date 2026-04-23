@@ -1,6 +1,6 @@
 'use client';
 
-import { Board } from '@/types/types';
+import { BoardType } from '@/types/types';
 import {
 	createContext,
 	useContext,
@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 interface AppContextType {
-	boards: Board[];
+	boards: BoardType[];
 	refetchBoards: () => void;
 	isModalOpen: boolean;
 	openModal: () => void;
@@ -20,7 +20,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-	const [boards, setBoards] = useState<Board[]>([]);
+	const [boards, setBoards] = useState<BoardType[]>([]);
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
 	const fetchBoards = () => {

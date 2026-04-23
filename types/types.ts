@@ -1,20 +1,20 @@
-export type Card = {
+export type CardType = {
 	id: string;
 	title?: string;
 	imageUrl: string;
 	position: number;
 };
 
-export type Column = {
+export type ColumnType = {
 	id: string;
 	title: string;
 	position: number;
-	cards: Card[];
+	cards: CardType[];
 };
 
-export type Board = {
+export type BoardType = {
 	id: string;
 	title: string;
-	columns: Column[];
+	columns: ColumnType[];
 	layout: string;
 };
