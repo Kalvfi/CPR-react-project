@@ -3,12 +3,14 @@ export type CardType = {
 	title?: string;
 	imageUrl: string;
 	position: number;
+	columnId: string;
 };
 
 export type ColumnType = {
 	id: string;
 	title: string;
 	position: number;
+	boardId: string;
 	cards: CardType[];
 };
 

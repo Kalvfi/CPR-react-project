@@ -37,9 +37,11 @@ export default function Column({
 			<h2 className="font-medium text-lg mb-3">{column.title}</h2>
 
 			<div className="flex flex-col gap-3">
-				{column?.cards.map((card: CardType, i: number) => (
-					<Card key={card.id} card={card} index={i} columnId={column.id} />
-				))}
+				{[...column.cards]
+					.sort((a, b) => a.position - b.position)
+					.map((card: CardType, i: number) => (
+						<Card key={card.id} card={card} index={i} columnId={column.id} />
+					))}
 			</div>
 
 			<button
