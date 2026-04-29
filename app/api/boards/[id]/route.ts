@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
+import { getImageUrl } from '@/lib/r2SignedUrl';
 
 export async function GET(
 	req: Request,
@@ -28,7 +29,22 @@ export async function GET(
 		if (!board)
 			return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-		return NextResponse.json(board);
+		const boardWithUrls = {
+			...board,
+			columns: await Promise.all(
+				board.columns.map(async (column) => ({
+					...column,
+					cards: await Promise.all(
+						column.cards.map(async (card) => ({
+							...card,
+							imageUrl: card.imageKey ? await getImageUrl(card.imageKey) : null,
+						})),
+					),
+				})),
+			),
+		};
+
+		return NextResponse.json(boardWithUrls);
 	} catch (err) {
 		return NextResponse.json(err, { status: 500 });
 	}
@@ -90,7 +106,7 @@ export async function PATCH(
 						where: { id: card.id },
 						data: {
 							title: card.title,
-							imageUrl: card.imageUrl,
+							imageKey: card.imageKey,
 							columnId: column.id,
 							position: cardIndex,
 						},

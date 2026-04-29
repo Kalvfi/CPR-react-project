@@ -40,7 +40,7 @@ export async function PATCH(
 			where: { id: params.id },
 			data: {
 				title: body.title,
-				imageUrl: body.imageUrl,
+				imageKey: body.imageKey,
 				columnId: body.columnId,
 				position: body.position,
 			},

@@ -1,7 +1,8 @@
 export type CardType = {
 	id: string;
 	title?: string;
-	imageUrl: string;
+	imageKey: string;
+	imageUrl?: string;
 	position: number;
 	columnId: string;
 };

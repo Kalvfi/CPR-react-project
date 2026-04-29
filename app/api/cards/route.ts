@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 		const card = await prisma.card.create({
 			data: {
 				title: body.title,
-				imageUrl: body.imageUrl,
+				imageKey: body.imageKey,
 				columnId: body.columnId,
 				position: body.position,
 			},

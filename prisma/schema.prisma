@@ -47,7 +47,7 @@ model Column {
 model Card {
   id        String   @id @default(cuid())
   title     String?
-  imageUrl  String
+  imageKey  String
   position  Int
   columnId  String
   column    Column @relation(fields: [columnId], references: [id], onDelete: Cascade)

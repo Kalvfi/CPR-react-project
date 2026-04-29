@@ -27,7 +27,13 @@ export default function Card({
 									bg-zinc-100 hover:bg-zinc-200
 									dark:bg-zinc-700 dark:hover:bg-zinc-600">
 			<p className="text-sm">{card.title}</p>
-			<img src={card.imageUrl} alt="" />
+			{card.imageUrl && (
+				<img
+					src={card.imageUrl}
+					alt={card.title}
+					className="w-full rounded-lg object-cover"
+				/>
+			)}
 		</div>
 	);
 }
