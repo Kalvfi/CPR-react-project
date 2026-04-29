@@ -1,13 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function PATCH(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const body = await req.json();
+	const { id } = await params;
 
 	if (!body.title || typeof body.title !== 'string') {
 		return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
@@ -20,7 +21,7 @@ export async function PATCH(
 	try {
 		const card = await prisma.card.findFirst({
 			where: {
-				id: params.id,
+				id: id,
 				column: {
 					board: {
 						ownerId: session.user.id,
@@ -37,7 +38,7 @@ export async function PATCH(
 
 	try {
 		const updated = await prisma.card.update({
-			where: { id: params.id },
+			where: { id: id },
 			data: {
 				title: body.title,
 				imageKey: body.imageKey,
@@ -53,17 +54,19 @@ export async function PATCH(
 }
 
 export async function DELETE(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
+	const { id } = await params;
 	const session = await getServerSession(authOptions);
+
 	if (!session)
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
 		const card = await prisma.card.findFirst({
 			where: {
-				id: params.id,
+				id: id,
 				column: {
 					board: {
 						ownerId: session.user.id,
@@ -80,7 +83,7 @@ export async function DELETE(
 
 	try {
 		await prisma.card.delete({
-			where: { id: params.id },
+			where: { id: id },
 		});
 	} catch (err) {
 		return NextResponse.json({ error: 'Server error' }, { status: 500 });

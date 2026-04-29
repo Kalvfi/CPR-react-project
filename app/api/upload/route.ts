@@ -1,12 +1,13 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2 } from '@/lib/r2';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
 	const formData = await req.formData();
 	const file = formData.get('file') as File;
 
 	if (!file) {
-		return Response.json({ error: 'No file' }, { status: 400 });
+		return NextResponse.json({ error: 'No file' }, { status: 400 });
 	}
 
 	const bytes = await file.arrayBuffer();
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
 		}),
 	);
 
-	return Response.json({
+	return NextResponse.json({
 		success: true,
 		key: fileName,
 	});

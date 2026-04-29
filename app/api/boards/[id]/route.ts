@@ -1,12 +1,12 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { getImageUrl } from '@/lib/r2SignedUrl';
 
 export async function GET(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
 	const session = await getServerSession(authOptions);
@@ -51,8 +51,8 @@ export async function GET(
 }
 
 export async function PATCH(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
 	const body = await req.json();
@@ -122,8 +122,8 @@ export async function PATCH(
 }
 
 export async function DELETE(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
 	const session = await getServerSession(authOptions);

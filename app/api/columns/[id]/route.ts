@@ -1,13 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function PATCH(
-	req: Request,
-	{ params }: { params: { id: string } },
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const body = await req.json();
+	const { id } = await params;
 
 	if (!body.title || typeof body.title !== 'string') {
 		return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
@@ -20,7 +21,7 @@ export async function PATCH(
 	try {
 		const column = await prisma.column.findFirst({
 			where: {
-				id: params.id,
+				id: id,
 				board: {
 					ownerId: session.user.id,
 				},
@@ -35,7 +36,7 @@ export async function PATCH(
 
 	try {
 		const updated = await prisma.column.update({
-			where: { id: params.id },
+			where: { id: id },
 			data: {
 				title: body.title,
 				position: body.position,
@@ -49,7 +50,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-	req: Request,
+	req: NextRequest,
 	{ params }: { params: { id: string } },
 ) {
 	const session = await getServerSession(authOptions);
