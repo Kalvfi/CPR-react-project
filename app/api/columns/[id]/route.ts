@@ -51,16 +51,18 @@ export async function PATCH(
 
 export async function DELETE(
 	req: NextRequest,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
+	const { id } = await params;
 	const session = await getServerSession(authOptions);
+
 	if (!session)
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
 		const column = await prisma.column.findFirst({
 			where: {
-				id: params.id,
+				id: id,
 				board: {
 					ownerId: session.user.id,
 				},
@@ -75,7 +77,7 @@ export async function DELETE(
 
 	try {
 		await prisma.column.delete({
-			where: { id: params.id },
+			where: { id: id },
 		});
 	} catch (err) {
 		return NextResponse.json({ error: 'Server error' }, { status: 500 });
