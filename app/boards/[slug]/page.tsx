@@ -1,7 +1,7 @@
 'use client';
 import Column from '@/components/Column';
 import { BoardType, ColumnType } from '@/types/types';
-import { DragDropProvider, useDroppable } from '@dnd-kit/react';
+import { DragDropProvider } from '@dnd-kit/react';
 import { Loader2, X } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { Key, useEffect, useState } from 'react';
@@ -249,43 +249,41 @@ export default function BoardView() {
 				}}>
 				<div
 					key={id as Key}
-					className="min-h-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
-					<div className="mx-auto">
-						<div className="flex items-center gap-4 mb-6">
-							<h1 className="text-3xl font-semibold tracking-tight">
-								{board?.title || 'Loading...'}
-							</h1>
+					className="h-full w-full overflow-x-auto overflow-y-hidden bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
+					<div className="flex items-center gap-4 mb-6">
+						<h1 className="text-3xl font-semibold tracking-tight">
+							{board?.title || 'Loading...'}
+						</h1>
 
-							{dirty && (
-								<button
-									onClick={saveBoard}
-									className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
-									Save Changes
-								</button>
-							)}
-						</div>
-
-						<div className="flex gap-6 overflow-auto pb-4 items-start">
-							{board &&
-								[...board.columns]
-									.sort((a, b) => a.position - b.position)
-									.map((column, i) => (
-										<Column
-											key={column.id}
-											column={column}
-											index={i}
-											onAddCard={() => setActiveColumnForNewCard(column)}
-										/>
-									))}
-
+						{dirty && (
 							<button
-								onClick={createColumn}
-								className="w-72 h-12 shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition
+								onClick={saveBoard}
+								className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
+								Save Changes
+							</button>
+						)}
+					</div>
+
+					<div className="flex h-full items-start gap-4 p-4">
+						{board &&
+							[...board.columns]
+								.sort((a, b) => a.position - b.position)
+								.map((column, i) => (
+									<Column
+										key={column.id}
+										column={column}
+										index={i}
+										onAddCard={() => setActiveColumnForNewCard(column)}
+									/>
+								))}
+
+						<button
+							onClick={createColumn}
+							className="w-72 h-12 shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition
 					border-zinc-300 text-zinc-500 hover:border-indigo-400 hover:text-indigo-500
 					dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-300">
-								+ Add Column
-							</button>
-						</div>
+							+ Add Column
+						</button>
 					</div>
 				</div>
 			</DragDropProvider>
@@ -363,7 +361,7 @@ function CreateCardModal({ column, onClose, onSubmit }: CreateCardModalProps) {
 							autoFocus
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
-							placeholder="e.g., Design Homepage"
+							placeholder="e.g., My Card"
 							className="w-full rounded-md border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
 							disabled={isLoading}
 						/>

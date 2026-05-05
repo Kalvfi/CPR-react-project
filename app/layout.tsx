@@ -33,7 +33,7 @@ export default function RootLayout({
 					<Header />
 					<div className="flex flex-1 overflow-hidden">
 						<Sidebar />
-						<main className="flex-1 overflow-y-auto">{children}</main>
+						<main className="flex-1 overflow-hidden">{children}</main>
 					</div>
 				</Providers>
 			</body>

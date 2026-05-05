@@ -19,7 +19,7 @@ export async function PATCH(
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
-		const column = await prisma.column.findFirst({
+		const column = await prisma.column.findUnique({
 			where: {
 				id: id,
 				board: {
@@ -30,11 +30,7 @@ export async function PATCH(
 
 		if (!column)
 			return NextResponse.json({ error: 'Not found' }, { status: 404 });
-	} catch (err) {
-		return NextResponse.json({ error: 'Server error' }, { status: 500 });
-	}
 
-	try {
 		const updated = await prisma.column.update({
 			where: { id: id },
 			data: {
@@ -60,7 +56,7 @@ export async function DELETE(
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 	try {
-		const column = await prisma.column.findFirst({
+		const column = await prisma.column.findUnique({
 			where: {
 				id: id,
 				board: {

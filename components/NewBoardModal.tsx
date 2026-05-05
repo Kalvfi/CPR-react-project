@@ -35,7 +35,6 @@ export default function NewBoardModal() {
 				throw new Error('Failed to create board');
 			}
 
-			// Clean up form and close modal
 			setBoardName('');
 			closeModal();
 

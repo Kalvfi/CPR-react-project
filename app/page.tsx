@@ -27,7 +27,7 @@ export default function Home() {
 					Welcome to TaskFlow
 				</h1>
 				<p className="mb-8 max-w-md text-lg text-gray-600 dark:text-gray-400">
-					Organize your projects, collaborate with your team, and get more done.
+					Organize your projects, visualize your ideas, and get more done.
 					Please sign in with Google to view your boards.
 				</p>
 			</div>
@@ -78,10 +78,6 @@ export default function Home() {
 								<button className="rounded p-1 text-gray-400 opacity-0 transition-opacity hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-300">
 									<MoreVertical size={16} />
 								</button>
-							</div>
-							<div className="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-								<Clock size={14} />
-								Edited
 							</div>
 						</div>
 					</Link>
