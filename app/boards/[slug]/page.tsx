@@ -53,19 +53,22 @@ export default function BoardView() {
 	const createColumn = async () => {
 		if (!board) return;
 
-		await fetch('/api/columns', {
-			method: 'POST',
-			body: JSON.stringify({
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+			newBoard.columns.push({
+				id: crypto.randomUUID(),
 				title: 'New Column',
 				boardId: board.id,
-				position: board.columns.length,
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-			},
+				position: newBoard.columns.length,
+				cards: [],
+			});
+
+			return newBoard;
 		});
 
-		saveBoard();
+		setDirty(true);
 	};
 
 	const createCard = async (column: ColumnType, title: string, file: File) => {
@@ -81,20 +84,27 @@ export default function BoardView() {
 
 		const json = await res.json();
 
-		await fetch('/api/cards', {
-			method: 'POST',
-			body: JSON.stringify({
-				title: title,
-				imageKey: json.key,
-				columnId: column.id,
-				position: column.cards.length,
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-			},
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+			const targetColumn = newBoard.columns.find((c) => c.id === column.id);
+
+			if (targetColumn) {
+				targetColumn.cards.push({
+					id: crypto.randomUUID(),
+					title: title,
+					imageKey: json.key,
+					imageUrl: json.url || URL.createObjectURL(file),
+					columnId: column.id,
+					position: targetColumn.cards.length,
+				});
+			}
+
+			return newBoard;
 		});
 
-		saveBoard();
+		setDirty(true);
 	};
 
 	return (

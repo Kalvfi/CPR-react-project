@@ -75,6 +75,11 @@ export async function PATCH(
 			return NextResponse.json({ error: 'Board not found' }, { status: 404 });
 		}
 
+		const incomingColumnIds = body.columns.map((c: any) => c.id);
+		const incomingCardIds = body.columns.flatMap((c: any) =>
+			c.cards.map((card: any) => card.id),
+		);
+
 		await prisma.$transaction(async (tx) => {
 			await tx.board.update({
 				where: { id },
@@ -84,6 +89,35 @@ export async function PATCH(
 				},
 			});
 
+			const dbColumns = await tx.column.findMany({
+				where: { boardId: id },
+				include: { cards: true },
+			});
+
+			const dbColumnIds = dbColumns.map((c) => c.id);
+			const dbCardIds = dbColumns.flatMap((c) =>
+				c.cards.map((card) => card.id),
+			);
+
+			const columnsToDelete = dbColumnIds.filter(
+				(colId) => !incomingColumnIds.includes(colId),
+			);
+			const cardsToDelete = dbCardIds.filter(
+				(cardId) => !incomingCardIds.includes(cardId),
+			);
+
+			if (cardsToDelete.length > 0) {
+				await tx.card.deleteMany({
+					where: { id: { in: cardsToDelete } },
+				});
+			}
+
+			if (columnsToDelete.length > 0) {
+				await tx.column.deleteMany({
+					where: { id: { in: columnsToDelete } },
+				});
+			}
+
 			for (
 				let columnIndex = 0;
 				columnIndex < body.columns.length;
@@ -91,9 +125,15 @@ export async function PATCH(
 			) {
 				const column = body.columns[columnIndex];
 
-				await tx.column.update({
+				await tx.column.upsert({
 					where: { id: column.id },
-					data: {
+					update: {
+						title: column.title,
+						position: columnIndex,
+					},
+					create: {
+						id: column.id,
+						boardId: id,
 						title: column.title,
 						position: columnIndex,
 					},
@@ -102,12 +142,19 @@ export async function PATCH(
 				for (let cardIndex = 0; cardIndex < column.cards.length; cardIndex++) {
 					const card = column.cards[cardIndex];
 
-					await tx.card.update({
+					await tx.card.upsert({
 						where: { id: card.id },
-						data: {
+						update: {
 							title: card.title,
 							imageKey: card.imageKey,
 							columnId: column.id,
+							position: cardIndex,
+						},
+						create: {
+							id: card.id,
+							columnId: column.id,
+							title: card.title,
+							imageKey: card.imageKey,
 							position: cardIndex,
 						},
 					});
