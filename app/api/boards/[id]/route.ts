@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
-import { getImageUrl } from '@/lib/r2SignedUrl';
+import { deleteImage, getImageUrl } from '@/lib/r2SignedUrl';
 
 export async function GET(
 	req: NextRequest,
@@ -93,11 +93,9 @@ export async function PATCH(
 				where: { boardId: id },
 				include: { cards: true },
 			});
-
 			const dbColumnIds = dbColumns.map((c) => c.id);
-			const dbCardIds = dbColumns.flatMap((c) =>
-				c.cards.map((card) => card.id),
-			);
+			const dbCards = dbColumns.flatMap((c) => c.cards);
+			const dbCardIds = dbCards.map((c) => c.id);
 
 			const columnsToDelete = dbColumnIds.filter(
 				(colId) => !incomingColumnIds.includes(colId),
@@ -107,6 +105,19 @@ export async function PATCH(
 			);
 
 			if (cardsToDelete.length > 0) {
+				await Promise.all(
+					cardsToDelete.map(async (cardId) => {
+						const card = dbCards.find((c) => c.id === cardId);
+						if (card?.imageKey) {
+							try {
+								await deleteImage(card.imageKey);
+							} catch (e) {
+								console.error('Failed to delete image:', card.imageKey, e);
+							}
+						}
+					}),
+				);
+
 				await tx.card.deleteMany({
 					where: { id: { in: cardsToDelete } },
 				});

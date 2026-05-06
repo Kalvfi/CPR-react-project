@@ -1,9 +1,10 @@
 'use client';
+import ActionMenu from '@/components/ActionMenu';
 import Column from '@/components/Column';
-import { BoardType, ColumnType } from '@/types/types';
+import { BoardType, CardType, ColumnType } from '@/types/types';
 import { DragDropProvider } from '@dnd-kit/react';
 import { Loader2, X } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Key, useEffect, useState } from 'react';
 
 export default function BoardView() {
@@ -12,6 +13,7 @@ export default function BoardView() {
 	const [activeColumnForNewCard, setActiveColumnForNewCard] =
 		useState<ColumnType | null>(null);
 	const params = useParams();
+	const router = useRouter();
 
 	const id = Array.isArray(params.slug) ? params.slug[0] : params.slug;
 
@@ -50,7 +52,7 @@ export default function BoardView() {
 		fetchBoard(id);
 	}, [id]);
 
-	const createColumn = async () => {
+	const createColumn = () => {
 		if (!board) return;
 
 		setBoard((prev) => {
@@ -64,6 +66,35 @@ export default function BoardView() {
 				position: newBoard.columns.length,
 				cards: [],
 			});
+
+			return newBoard;
+		});
+
+		setDirty(true);
+	};
+
+	const renameColumn = (column: ColumnType, title: string) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+
+			const col = newBoard.columns.find((c) => c.id === column.id);
+			if (col) col.title = title;
+
+			return newBoard;
+		});
+
+		setDirty(true);
+	};
+
+	const deleteColumn = (column: ColumnType) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+
+			newBoard.columns = newBoard.columns.filter((c) => c.id !== column.id);
 
 			return newBoard;
 		});
@@ -106,6 +137,58 @@ export default function BoardView() {
 
 		setDirty(true);
 	};
+
+	const renameCard = (card: CardType, title: string) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+
+			for (const col of newBoard.columns) {
+				const c = col.cards.find((x) => x.id === card.id);
+				if (c) {
+					c.title = title;
+					break;
+				}
+			}
+
+			return newBoard;
+		});
+		setDirty(true);
+	};
+
+	const deleteCard = (card: CardType) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+
+			const newBoard = structuredClone(prev);
+
+			for (const col of newBoard.columns) {
+				col.cards = col.cards.filter((c) => c.id !== card.id);
+			}
+
+			return newBoard;
+		});
+
+		setDirty(true);
+	};
+
+	const renameBoard = (title: string) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+			return { ...prev, title };
+		});
+		setDirty(true);
+	};
+
+	const deleteBoard = async () => {
+		if (!confirm('Are you sure you want to delete this board?')) return;
+		const res = await fetch(`/api/boards/${board?.id}`, { method: 'DELETE' });
+		if (res.ok) router.push('/');
+	};
+
+	const [isEditingBoard, setIsEditingBoard] = useState(false);
+	const [boardTitle, setBoardTitle] = useState('');
 
 	return (
 		<>
@@ -259,11 +342,48 @@ export default function BoardView() {
 				}}>
 				<div
 					key={id as Key}
-					className="h-full w-full overflow-x-auto overflow-y-hidden bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
+					className="h-full w-full overflow-auto bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
 					<div className="flex items-center gap-4 mb-6">
-						<h1 className="text-3xl font-semibold tracking-tight">
-							{board?.title || 'Loading...'}
-						</h1>
+						<div className="group relative flex items-center gap-2 w-fit">
+							{isEditingBoard ? (
+								<input
+									autoFocus
+									value={boardTitle}
+									onChange={(e) => setBoardTitle(e.target.value)}
+									onBlur={() => {
+										if (boardTitle.trim() && boardTitle !== board?.title) {
+											renameBoard(boardTitle);
+										}
+										setIsEditingBoard(false);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') {
+											if (boardTitle.trim() && boardTitle !== board?.title) {
+												renameBoard(boardTitle);
+											}
+											setIsEditingBoard(false);
+										}
+									}}
+									className="text-3xl font-semibold tracking-tight bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+								/>
+							) : (
+								<h1 className="text-3xl font-semibold tracking-tight pr-8">
+									{board?.title || 'Loading...'}
+								</h1>
+							)}
+
+							{board && !isEditingBoard && (
+								<ActionMenu
+									onRename={() => {
+										setBoardTitle(board.title);
+										setIsEditingBoard(true);
+									}}
+									onDelete={deleteBoard}
+									type="board"
+									className="absolute right-0 top-1/2 -translate-y-1/2"
+								/>
+							)}
+						</div>
 
 						{dirty && (
 							<button
@@ -284,6 +404,10 @@ export default function BoardView() {
 										column={column}
 										index={i}
 										onAddCard={() => setActiveColumnForNewCard(column)}
+										renameColumn={renameColumn}
+										deleteColumn={deleteColumn}
+										renameCard={renameCard}
+										deleteCard={deleteCard}
 									/>
 								))}
 
