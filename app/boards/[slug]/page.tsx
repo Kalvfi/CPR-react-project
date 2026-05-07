@@ -381,6 +381,14 @@ export default function BoardView() {
 								type="board"
 							/>
 						)}
+
+						{dirty && (
+							<button
+								onClick={saveBoard}
+								className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
+								Save Changes
+							</button>
+						)}
 					</div>
 
 					<div className="flex h-full items-start gap-4 p-4">
