@@ -39,33 +39,36 @@ export default function Card({
 	return (
 		<div
 			ref={ref}
-			className="group relative rounded-xl p-3 shadow-sm cursor-pointer transition
+			className="relative rounded-xl p-3 shadow-sm cursor-pointer transition
 									bg-zinc-100 hover:bg-zinc-200
 									dark:bg-zinc-700 dark:hover:bg-zinc-600">
-			{!isEditing && (
-				<ActionMenu
-					onRename={() => {
-						setEditTitle(card.title!);
-						setIsEditing(true);
-					}}
-					onDelete={() => onDelete(card)}
-					type="card"
-				/>
-			)}
-
-			{isEditing ? (
-				<input
-					autoFocus
-					value={editTitle}
-					onChange={(e) => setEditTitle(e.target.value)}
-					onBlur={handleRename}
-					onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-					onPointerDown={(e) => e.stopPropagation()}
-					className="text-sm w-full bg-transparent border-b-2 border-indigo-500 focus:outline-none mb-2"
-				/>
-			) : (
-				<p className="text-sm pr-6 mb-2">{card.title}</p>
-			)}
+			<div className="flex items-start justify-between">
+				{isEditing ? (
+					<input
+						autoFocus
+						value={editTitle}
+						onChange={(e) => setEditTitle(e.target.value)}
+						onBlur={handleRename}
+						onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+						onPointerDown={(e) => e.stopPropagation()}
+						className="text-sm w-full bg-transparent border-b-2 border-indigo-500 focus:outline-none mb-2"
+					/>
+				) : (
+					<p className="text-sm pr-6 mb-2">{card.title}</p>
+				)}
+				{!isEditing && (
+					<div className="absolute right-2 top-2">
+						<ActionMenu
+							onRename={() => {
+								setEditTitle(card.title!);
+								setIsEditing(true);
+							}}
+							onDelete={() => onDelete(card)}
+							type="card"
+						/>
+					</div>
+				)}
+			</div>
 
 			{card.imageUrl && (
 				<img

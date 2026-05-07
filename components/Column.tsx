@@ -51,33 +51,37 @@ export default function Column({
 				ref(node);
 				dropRef(node);
 			}}
-			className="group relative w-72 max-h-fit shrink-0 rounded-2xl p-4 shadow-md border 
+			className="relative w-72 max-h-fit shrink-0 rounded-2xl p-4 shadow-md border 
 						bg-white border-zinc-200 
 						dark:bg-zinc-800 dark:border-zinc-700">
-			{!isEditing && (
-				<ActionMenu
-					onRename={() => {
-						setEditTitle(column.title);
-						setIsEditing(true);
-					}}
-					onDelete={() => deleteColumn(column)}
-					type="column"
-				/>
-			)}
+			<div className="flex items-start justify-between">
+				{isEditing ? (
+					<input
+						autoFocus
+						value={editTitle}
+						onChange={(e) => setEditTitle(e.target.value)}
+						onBlur={handleRename}
+						onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+						onPointerDown={(e) => e.stopPropagation()}
+						className="font-medium text-lg mb-3 w-full bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+					/>
+				) : (
+					<h2 className="font-medium text-lg mb-3 pr-8">{column.title}</h2>
+				)}
 
-			{isEditing ? (
-				<input
-					autoFocus
-					value={editTitle}
-					onChange={(e) => setEditTitle(e.target.value)}
-					onBlur={handleRename}
-					onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-					onPointerDown={(e) => e.stopPropagation()}
-					className="font-medium text-lg mb-3 w-full bg-transparent border-b-2 border-indigo-500 focus:outline-none"
-				/>
-			) : (
-				<h2 className="font-medium text-lg mb-3 pr-8">{column.title}</h2>
-			)}
+				{!isEditing && (
+					<div className="absolute right-2 top-2">
+						<ActionMenu
+							onRename={() => {
+								setEditTitle(column.title);
+								setIsEditing(true);
+							}}
+							onDelete={() => deleteColumn(column)}
+							type="column"
+						/>
+					</div>
+				)}
+			</div>
 
 			<div className="flex flex-col gap-3">
 				{[...column.cards]

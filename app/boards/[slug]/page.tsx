@@ -343,54 +343,43 @@ export default function BoardView() {
 				<div
 					key={id as Key}
 					className="h-full w-full overflow-auto bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
-					<div className="flex items-center gap-4 mb-6">
-						<div className="group relative flex items-center gap-2 w-fit">
-							{isEditingBoard ? (
-								<input
-									autoFocus
-									value={boardTitle}
-									onChange={(e) => setBoardTitle(e.target.value)}
-									onBlur={() => {
+					<div className="flex items-center gap-2">
+						{isEditingBoard ? (
+							<input
+								autoFocus
+								value={boardTitle}
+								onChange={(e) => setBoardTitle(e.target.value)}
+								onBlur={() => {
+									if (boardTitle.trim() && boardTitle !== board?.title) {
+										renameBoard(boardTitle);
+									}
+									setIsEditingBoard(false);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
 										if (boardTitle.trim() && boardTitle !== board?.title) {
 											renameBoard(boardTitle);
 										}
 										setIsEditingBoard(false);
-									}}
-									onKeyDown={(e) => {
-										if (e.key === 'Enter') {
-											if (boardTitle.trim() && boardTitle !== board?.title) {
-												renameBoard(boardTitle);
-											}
-											setIsEditingBoard(false);
-										}
-									}}
-									className="text-3xl font-semibold tracking-tight bg-transparent border-b-2 border-indigo-500 focus:outline-none"
-								/>
-							) : (
-								<h1 className="text-3xl font-semibold tracking-tight pr-8">
-									{board?.title || 'Loading...'}
-								</h1>
-							)}
+									}
+								}}
+								className="text-3xl font-semibold tracking-tight bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+							/>
+						) : (
+							<h1 className="text-3xl font-semibold tracking-tight">
+								{board?.title || 'Loading...'}
+							</h1>
+						)}
 
-							{board && !isEditingBoard && (
-								<ActionMenu
-									onRename={() => {
-										setBoardTitle(board.title);
-										setIsEditingBoard(true);
-									}}
-									onDelete={deleteBoard}
-									type="board"
-									className="absolute right-0 top-1/2 -translate-y-1/2"
-								/>
-							)}
-						</div>
-
-						{dirty && (
-							<button
-								onClick={saveBoard}
-								className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
-								Save Changes
-							</button>
+						{board && !isEditingBoard && (
+							<ActionMenu
+								onRename={() => {
+									setBoardTitle(board.title);
+									setIsEditingBoard(true);
+								}}
+								onDelete={deleteBoard}
+								type="board"
+							/>
 						)}
 					</div>
 
@@ -413,9 +402,7 @@ export default function BoardView() {
 
 						<button
 							onClick={createColumn}
-							className="w-72 h-12 shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition
-					border-zinc-300 text-zinc-500 hover:border-indigo-400 hover:text-indigo-500
-					dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-300">
+							className="w-72 h-12 shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition border-zinc-300 text-zinc-500 hover:border-indigo-400 hover:text-indigo-500 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-300">
 							+ Add Column
 						</button>
 					</div>
