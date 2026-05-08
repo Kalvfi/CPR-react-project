@@ -192,10 +192,31 @@ export async function DELETE(
 	try {
 		const board = await prisma.board.findUnique({
 			where: { id: id, ownerId: session.user.id },
+			include: {
+				columns: {
+					include: {
+						cards: true,
+					},
+				},
+			},
 		});
 
 		if (!board)
 			return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+		await Promise.all(
+			board.columns.map((column) => {
+				column.cards.map(async (card) => {
+					if (card?.imageKey) {
+						try {
+							await deleteImage(card.imageKey);
+						} catch (e) {
+							console.error('Failed to delete image:', card.imageKey, e);
+						}
+					}
+				});
+			}),
+		);
 
 		await prisma.board.delete({
 			where: { id: id, ownerId: session.user.id },

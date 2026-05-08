@@ -1,14 +1,58 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { KanbanSquare, Plus, MoreVertical, Clock } from 'lucide-react';
+import { KanbanSquare, Plus } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import NewBoardModal from '@/components/NewBoardModal';
 import Link from 'next/link';
+import { useState } from 'react';
+import ActionMenu from '@/components/ActionMenu';
 
 export default function Home() {
 	const { data: session, status } = useSession();
 	const { boards, openModal } = useAppContext();
+	const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+	const [editTitle, setEditTitle] = useState('');
+
+	const renameBoard = async (boardId: string, title: string) => {
+		const board = boards.find((b) => b.id === boardId);
+		if (!board) return;
+
+		const updatedBoard = {
+			...board,
+			title,
+		};
+
+		const res = await fetch(`/api/boards/${boardId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(updatedBoard),
+		});
+
+		if (!res.ok) {
+			console.error('Failed to rename board', await res.text());
+			return;
+		}
+
+		location.reload();
+	};
+
+	const deleteBoard = async (boardId: string) => {
+		if (!confirm('Delete this board?')) return;
+
+		const res = await fetch(`/api/boards/${boardId}`, {
+			method: 'DELETE',
+		});
+
+		if (!res.ok) {
+			console.error('Failed to delete board');
+			return;
+		}
+
+		location.reload();
+	};
 
 	if (status === 'loading') {
 		return <p>Loading...</p>;
@@ -68,19 +112,55 @@ export default function Home() {
 
 				{/* Existing Boards */}
 				{boards.map((board) => (
-					<Link href={`/boards/${encodeURIComponent(board.id)}`} key={board.id}>
-						<div className="group relative flex h-40 cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-950">
-							<div className={`absolute left-0 top-0 h-1 w-full bg-blue-500`} />
-							<div className="flex items-start justify-between">
+					<div
+						key={board.id}
+						className=" group relative flex h-40 flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-950 ">
+						<Link
+							href={`/boards/${encodeURIComponent(board.id)}`}
+							className="absolute inset-0 z-0"
+						/>
+						<div className="absolute left-0 top-0 h-1 w-full bg-blue-500" />
+						<div className="flex items-start justify-between">
+							{editingBoardId === board.id ? (
+								<input
+									autoFocus
+									value={editTitle}
+									onChange={(e) => setEditTitle(e.target.value)}
+									onClick={(e) => e.stopPropagation()}
+									onPointerDown={(e) => e.stopPropagation()}
+									onBlur={async () => {
+										if (editTitle.trim() && editTitle !== board.title) {
+											await renameBoard(board.id, editTitle);
+										}
+										setEditingBoardId(null);
+									}}
+									onKeyDown={async (e) => {
+										if (e.key === 'Enter') {
+											if (editTitle.trim() && editTitle !== board.title) {
+												await renameBoard(board.id, editTitle);
+											}
+											setEditingBoardId(null);
+										}
+									}}
+									className="relative z-10 w-full bg-transparent border-b border-indigo-500 font-semibold text-gray-900 dark:text-white focus:outline-none "
+								/>
+							) : (
 								<h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2">
 									{board.title}
 								</h3>
-								<button className="rounded p-1 text-gray-400 opacity-0 transition-opacity hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-800 dark:hover:text-gray-300">
-									<MoreVertical size={16} />
-								</button>
+							)}
+							<div className="relative z-10">
+								<ActionMenu
+									onRename={() => {
+										setEditingBoardId(board.id);
+										setEditTitle(board.title);
+									}}
+									onDelete={() => deleteBoard(board.id)}
+									type="board"
+								/>
 							</div>
 						</div>
-					</Link>
+					</div>
 				))}
 			</div>
 

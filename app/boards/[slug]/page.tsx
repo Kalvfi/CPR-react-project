@@ -1,6 +1,7 @@
 'use client';
 import ActionMenu from '@/components/ActionMenu';
 import Column from '@/components/Column';
+import { useAppContext } from '@/context/AppContext';
 import { BoardType, CardType, ColumnType } from '@/types/types';
 import { DragDropProvider } from '@dnd-kit/react';
 import { Loader2, X } from 'lucide-react';
@@ -10,6 +11,7 @@ import { Key, useEffect, useState } from 'react';
 export default function BoardView() {
 	const [board, setBoard] = useState<BoardType | null>(null);
 	const [dirty, setDirty] = useState(false);
+	const { removeBoard } = useAppContext();
 	const [activeColumnForNewCard, setActiveColumnForNewCard] =
 		useState<ColumnType | null>(null);
 	const params = useParams();
@@ -183,8 +185,14 @@ export default function BoardView() {
 
 	const deleteBoard = async () => {
 		if (!confirm('Are you sure you want to delete this board?')) return;
-		const res = await fetch(`/api/boards/${board?.id}`, { method: 'DELETE' });
-		if (res.ok) router.push('/');
+		if (!board) return;
+
+		const res = await fetch(`/api/boards/${board.id}`, { method: 'DELETE' });
+
+		if (!res.ok) return;
+
+		removeBoard(board.id);
+		router.push('/');
 	};
 
 	const [isEditingBoard, setIsEditingBoard] = useState(false);
@@ -379,6 +387,7 @@ export default function BoardView() {
 								}}
 								onDelete={deleteBoard}
 								type="board"
+								menuPosition="left"
 							/>
 						)}
 

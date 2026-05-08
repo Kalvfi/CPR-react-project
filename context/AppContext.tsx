@@ -15,6 +15,7 @@ interface AppContextType {
 	isModalOpen: boolean;
 	openModal: () => void;
 	closeModal: () => void;
+	removeBoard: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,6 +43,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 				isModalOpen,
 				openModal: () => setIsModalOpen(true),
 				closeModal: () => setIsModalOpen(false),
+				removeBoard: (id: string) =>
+					setBoards((prev) => prev.filter((b) => b.id !== id)),
 			}}>
 			{children}
 		</AppContext.Provider>

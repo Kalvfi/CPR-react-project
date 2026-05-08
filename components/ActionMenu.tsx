@@ -6,6 +6,7 @@ interface ActionMenuProps {
 	onDelete: () => void;
 	type: 'board' | 'column' | 'card';
 	className?: string;
+	menuPosition?: 'left' | 'right';
 }
 
 export default function ActionMenu({
@@ -13,6 +14,7 @@ export default function ActionMenu({
 	onDelete,
 	type,
 	className = '',
+	menuPosition = 'right',
 }: ActionMenuProps) {
 	const [open, setOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -53,15 +55,7 @@ export default function ActionMenu({
 
 			{open && (
 				<div
-					className="
-						absolute right-0 top-full mt-1
-						w-36 overflow-hidden
-						rounded-xl border
-						border-zinc-700
-						bg-zinc-900
-						shadow-xl
-						z-50
-					">
+					className={`absolute top-full mt-2 ${menuPosition === 'right' ? 'right-0' : 'left-0'} w-36 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-xl z-50 `}>
 					<button
 						onClick={(e) => {
 							e.stopPropagation();

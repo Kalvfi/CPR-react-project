@@ -11,6 +11,13 @@ export async function GET() {
 	try {
 		const boards = await prisma.board.findMany({
 			where: { ownerId: session.user.id },
+			include: {
+				columns: {
+					include: {
+						cards: true,
+					},
+				},
+			},
 		});
 
 		return NextResponse.json(boards);
