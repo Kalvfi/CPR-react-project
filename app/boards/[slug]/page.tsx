@@ -4,9 +4,11 @@ import Column from '@/components/Column';
 import { useAppContext } from '@/context/AppContext';
 import { BoardType, CardType, ColumnType } from '@/types/types';
 import { DragDropProvider } from '@dnd-kit/react';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, Columns3, Rows3, LayoutGrid } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Key, useEffect, useState } from 'react';
+
+type LayoutOption = 'columns' | 'rows' | 'grid';
 
 export default function BoardView() {
 	const [board, setBoard] = useState<BoardType | null>(null);
@@ -18,6 +20,8 @@ export default function BoardView() {
 	const router = useRouter();
 
 	const id = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+	const currentLayout: LayoutOption =
+		(board?.layout as LayoutOption) || 'columns';
 
 	const fetchBoard = async (id: string) => {
 		const res = await fetch(`/api/boards/${id}`, {
@@ -183,6 +187,14 @@ export default function BoardView() {
 		setDirty(true);
 	};
 
+	const changeLayout = (layout: LayoutOption) => {
+		setBoard((prev) => {
+			if (!prev) return prev;
+			return { ...prev, layout };
+		});
+		setDirty(true);
+	};
+
 	const deleteBoard = async () => {
 		if (!confirm('Are you sure you want to delete this board?')) return;
 		if (!board) return;
@@ -197,6 +209,18 @@ export default function BoardView() {
 
 	const [isEditingBoard, setIsEditingBoard] = useState(false);
 	const [boardTitle, setBoardTitle] = useState('');
+
+	const getLayoutClasses = (layout: LayoutOption) => {
+		switch (layout) {
+			case 'rows':
+				return 'flex flex-col gap-6';
+			case 'grid':
+				return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start';
+			case 'columns':
+			default:
+				return 'flex h-full items-start gap-4 w-max min-w-full';
+		}
+	};
 
 	return (
 		<>
@@ -249,6 +273,9 @@ export default function BoardView() {
 							const activeCardIndex = activeColumn.cards.findIndex(
 								(c) => c.id === source.id,
 							);
+
+							if (activeCardIndex === -1) return prev;
+
 							const [movedCard] = activeColumn.cards.splice(activeCardIndex, 1);
 							movedCard.columnId = overColumn.id;
 
@@ -320,13 +347,9 @@ export default function BoardView() {
 								const activeIndex = activeColumn.cards.findIndex(
 									(c) => c.id === source.id,
 								);
-								let overIndex = overColumn.cards.findIndex(
+								const overIndex = overColumn.cards.findIndex(
 									(c) => c.id === target.id,
 								);
-
-								if (overIndex === -1) {
-									overIndex = overColumn.cards.length;
-								}
 
 								if (activeIndex !== -1 && activeIndex !== overIndex) {
 									const [moved] = activeColumn.cards.splice(activeIndex, 1);
@@ -350,57 +373,85 @@ export default function BoardView() {
 				}}>
 				<div
 					key={id as Key}
-					className="h-full w-full overflow-auto bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors">
-					<div className="flex items-center gap-2">
-						{isEditingBoard ? (
-							<input
-								autoFocus
-								value={boardTitle}
-								onChange={(e) => setBoardTitle(e.target.value)}
-								onBlur={() => {
-									if (boardTitle.trim() && boardTitle !== board?.title) {
-										renameBoard(boardTitle);
-									}
-									setIsEditingBoard(false);
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
+					className="h-full w-full overflow-auto bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-6 transition-colors flex flex-col">
+					<div className="flex items-center justify-between gap-4 w-full shrink-0">
+						<div className="flex items-center gap-2">
+							{isEditingBoard ? (
+								<input
+									autoFocus
+									value={boardTitle}
+									onChange={(e) => setBoardTitle(e.target.value)}
+									onBlur={() => {
 										if (boardTitle.trim() && boardTitle !== board?.title) {
 											renameBoard(boardTitle);
 										}
 										setIsEditingBoard(false);
-									}
-								}}
-								className="text-3xl font-semibold tracking-tight bg-transparent border-b-2 border-indigo-500 focus:outline-none"
-							/>
-						) : (
-							<h1 className="text-3xl font-semibold tracking-tight">
-								{board?.title || 'Loading...'}
-							</h1>
-						)}
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') {
+											if (boardTitle.trim() && boardTitle !== board?.title) {
+												renameBoard(boardTitle);
+											}
+											setIsEditingBoard(false);
+										}
+									}}
+									className="text-3xl font-semibold tracking-tight bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+								/>
+							) : (
+								<h1 className="text-3xl font-semibold tracking-tight">
+									{board?.title || 'Loading...'}
+								</h1>
+							)}
 
-						{board && !isEditingBoard && (
-							<ActionMenu
-								onRename={() => {
-									setBoardTitle(board.title);
-									setIsEditingBoard(true);
-								}}
-								onDelete={deleteBoard}
-								type="board"
-								menuPosition="left"
-							/>
-						)}
+							{board && !isEditingBoard && (
+								<ActionMenu
+									onRename={() => {
+										setBoardTitle(board.title);
+										setIsEditingBoard(true);
+									}}
+									onDelete={deleteBoard}
+									type="board"
+									menuPosition="left"
+								/>
+							)}
 
-						{dirty && (
-							<button
-								onClick={saveBoard}
-								className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
-								Save Changes
-							</button>
+							{dirty && (
+								<button
+									onClick={saveBoard}
+									className="ml-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition">
+									Save Changes
+								</button>
+							)}
+						</div>
+						{board && (
+							<div className="flex items-center bg-zinc-200/70 dark:bg-zinc-800 rounded-lg p-1">
+								{(['columns', 'rows', 'grid'] as const).map((layoutOption) => {
+									const Icon =
+										layoutOption === 'columns'
+											? Columns3
+											: layoutOption === 'rows'
+												? Rows3
+												: LayoutGrid;
+
+									return (
+										<button
+											key={layoutOption}
+											onClick={() => changeLayout(layoutOption)}
+											aria-label={`Switch to ${layoutOption} layout`}
+											className={`flex items-center justify-center p-2 rounded-md transition-all duration-200 ${
+												currentLayout === layoutOption
+													? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
+													: 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+											}`}>
+											<Icon size={18} />
+										</button>
+									);
+								})}
+							</div>
 						)}
 					</div>
 
-					<div className="flex h-full items-start gap-4 p-4">
+					<div className={`mt-8 flex-1 ${getLayoutClasses(currentLayout)}`}>
 						{board &&
 							[...board.columns]
 								.sort((a, b) => a.position - b.position)
@@ -409,6 +460,7 @@ export default function BoardView() {
 										key={column.id}
 										column={column}
 										index={i}
+										layout={currentLayout}
 										onAddCard={() => setActiveColumnForNewCard(column)}
 										renameColumn={renameColumn}
 										deleteColumn={deleteColumn}
@@ -419,7 +471,7 @@ export default function BoardView() {
 
 						<button
 							onClick={createColumn}
-							className="w-72 h-12 shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition border-zinc-300 text-zinc-500 hover:border-indigo-400 hover:text-indigo-500 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-300">
+							className={`shrink-0 rounded-2xl border-2 border-dashed flex items-center justify-center transition border-zinc-300 text-zinc-500 hover:border-indigo-400 hover:text-indigo-500 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-300 ${currentLayout === 'columns' ? 'w-72 h-12' : 'w-full h-12'}`}>
 							+ Add Column
 						</button>
 					</div>

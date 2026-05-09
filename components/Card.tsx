@@ -9,12 +9,14 @@ export default function Card({
 	card,
 	index,
 	columnId,
+	layout = 'columns',
 	onRename,
 	onDelete,
 }: {
 	card: CardType;
 	index: number;
 	columnId: string;
+	layout?: 'columns' | 'rows' | 'grid';
 	onRename: (card: CardType, title: string) => void;
 	onDelete: (card: CardType) => void;
 }) {
@@ -39,9 +41,10 @@ export default function Card({
 	return (
 		<div
 			ref={ref}
-			className="relative rounded-xl p-3 shadow-sm cursor-pointer transition
+			className={`relative rounded-xl p-3 shadow-sm cursor-pointer transition
 									bg-zinc-100 hover:bg-zinc-200
-									dark:bg-zinc-700 dark:hover:bg-zinc-600">
+									dark:bg-zinc-700 dark:hover:bg-zinc-600
+									${layout === 'rows' ? 'w-72 shrink-0 flex-none' : 'w-full'}`}>
 			<div className="flex items-start justify-between">
 				{isEditing ? (
 					<input
