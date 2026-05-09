@@ -16,6 +16,7 @@ interface AppContextType {
 	openModal: () => void;
 	closeModal: () => void;
 	removeBoard: (id: string) => void;
+	retitleBoard: (id: string, title: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,6 +46,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 				closeModal: () => setIsModalOpen(false),
 				removeBoard: (id: string) =>
 					setBoards((prev) => prev.filter((b) => b.id !== id)),
+				retitleBoard: (id: string, title: string) => {
+					setBoards((prev) =>
+						prev.map((board) =>
+							board.id === id ? { ...board, title } : board,
+						),
+					);
+				},
 			}}>
 			{children}
 		</AppContext.Provider>

@@ -10,7 +10,7 @@ import ActionMenu from '@/components/ActionMenu';
 
 export default function Home() {
 	const { data: session, status } = useSession();
-	const { boards, openModal } = useAppContext();
+	const { boards, openModal, removeBoard, retitleBoard } = useAppContext();
 	const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
 	const [editTitle, setEditTitle] = useState('');
 
@@ -36,7 +36,7 @@ export default function Home() {
 			return;
 		}
 
-		location.reload();
+		retitleBoard(boardId, title);
 	};
 
 	const deleteBoard = async (boardId: string) => {
@@ -51,7 +51,7 @@ export default function Home() {
 			return;
 		}
 
-		location.reload();
+		removeBoard(boardId);
 	};
 
 	if (status === 'loading') {

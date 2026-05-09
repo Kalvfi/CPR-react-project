@@ -13,7 +13,7 @@ type LayoutOption = 'columns' | 'rows' | 'grid';
 export default function BoardView() {
 	const [board, setBoard] = useState<BoardType | null>(null);
 	const [dirty, setDirty] = useState(false);
-	const { removeBoard } = useAppContext();
+	const { removeBoard, retitleBoard } = useAppContext();
 	const [activeColumnForNewCard, setActiveColumnForNewCard] =
 		useState<ColumnType | null>(null);
 	const params = useParams();
@@ -37,6 +37,8 @@ export default function BoardView() {
 	};
 
 	const saveBoard = async () => {
+		if (!board) return;
+
 		const res = await fetch(`/api/boards/${board?.id}`, {
 			method: 'PATCH',
 			headers: {
@@ -45,12 +47,10 @@ export default function BoardView() {
 			body: JSON.stringify(board),
 		});
 
-		if (res.ok) {
-			await fetchBoard(id!);
-			setDirty(false);
-		} else {
-			console.error('Failed to save changes');
-		}
+		if (!res.ok) return;
+
+		retitleBoard(board.id, board.title);
+		setDirty(false);
 	};
 
 	useEffect(() => {
@@ -180,6 +180,8 @@ export default function BoardView() {
 	};
 
 	const renameBoard = (title: string) => {
+		if (!board) return;
+
 		setBoard((prev) => {
 			if (!prev) return prev;
 			return { ...prev, title };
